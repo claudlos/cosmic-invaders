@@ -112,7 +112,7 @@ Phase 7  ██████████  Review + Bug Fixes codex + claude  6.0 
 - **Small models fail on complex multi-file tasks** — Nemotron hallucinated tool calls on a 4-file creation task
 - **Write task prompts to files** — avoids shell quoting issues when dispatching via tmux
 
-📊 **[Full interactive build report →](docs/build-report.html)** — detailed timeline, per-task metrics, agent performance comparison
+📊 **[Full interactive build report →](https://claudlos.github.io/cosmic-invaders/)** — detailed timeline, per-task metrics, agent performance comparison
 
 ---
 
