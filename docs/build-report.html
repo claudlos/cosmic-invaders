@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cosmic Invaders — Multi-Agent Build Report</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;400;600;700;900&display=swap');
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --surface2: #1a1a28;
+    --border: #2a2a3a;
+    --cyan: #00e5ff;
+    --green: #00ff88;
+    --red: #ff4466;
+    --yellow: #ffcc00;
+    --purple: #b388ff;
+    --orange: #ff8844;
+    --text: #e0e0e8;
+    --dim: #888899;
+    --glow-cyan: 0 0 20px rgba(0,229,255,0.3), 0 0 60px rgba(0,229,255,0.1);
+    --glow-green: 0 0 20px rgba(0,255,136,0.3);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, sans-serif;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  .hero {
+    position: relative;
+    padding: 80px 40px 60px;
+    text-align: center;
+    overflow: hidden;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background:
+      radial-gradient(ellipse at 20% 50%, rgba(0,229,255,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 50%, rgba(179,136,255,0.06) 0%, transparent 60%),
+      radial-gradient(ellipse at 50% 100%, rgba(255,68,102,0.05) 0%, transparent 50%);
+    pointer-events: none;
+  }
+
+  .hero h1 {
+    font-size: 3.5rem;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, var(--cyan), var(--purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: var(--glow-cyan);
+    margin-bottom: 8px;
+  }
+
+  .hero .subtitle {
+    font-size: 1.3rem;
+    color: var(--dim);
+    font-weight: 300;
+    margin-bottom: 30px;
+  }
+
+  .hero-stats {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    flex-wrap: wrap;
+  }
+
+  .hero-stat {
+    text-align: center;
+  }
+
+  .hero-stat .value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: var(--cyan);
+  }
+
+  .hero-stat .label {
+    font-size: 0.8rem;
+    color: var(--dim);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  section {
+    padding: 50px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  section:last-child { border-bottom: none; }
+
+  h2 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-bottom: 24px;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  h2 .icon { font-size: 1.4rem; }
+
+  h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--cyan);
+    margin: 20px 0 10px;
+  }
+
+  p, li { color: var(--text); font-size: 0.95rem; }
+  p { margin-bottom: 12px; }
+  ul { padding-left: 20px; margin-bottom: 16px; }
+  li { margin-bottom: 6px; }
+
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    transition: border-color 0.2s;
+  }
+
+  .card:hover { border-color: var(--cyan); }
+
+  .card .card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .card .card-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+  }
+
+  .card .card-title {
+    font-weight: 700;
+    font-size: 1.05rem;
+  }
+
+  .card .card-subtitle {
+    font-size: 0.8rem;
+    color: var(--dim);
+  }
+
+  .card .card-body { font-size: 0.9rem; color: var(--dim); }
+
+  .card-stat {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-size: 0.88rem;
+  }
+
+  .card-stat:last-child { border-bottom: none; }
+  .card-stat .stat-label { color: var(--dim); }
+  .card-stat .stat-value { font-family: 'JetBrains Mono', monospace; font-weight: 600; }
+
+  .icon-nemo { background: linear-gradient(135deg, #76b900, #4a7a00); }
+  .icon-claude { background: linear-gradient(135deg, #cc785c, #a0523c); }
+  .icon-codex { background: linear-gradient(135deg, #10a37f, #0a7a5c); }
+  .icon-hermes { background: linear-gradient(135deg, #8b5cf6, #6d3abf); }
+
+  .color-nemo { color: #76b900; }
+  .color-claude { color: #cc785c; }
+  .color-codex { color: #10a37f; }
+  .color-hermes { color: #8b5cf6; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 0.88rem;
+  }
+
+  thead { border-bottom: 2px solid var(--border); }
+
+  th {
+    text-align: left;
+    padding: 10px 12px;
+    font-weight: 600;
+    color: var(--dim);
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+  }
+
+  td {
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+
+  tr:hover td { background: rgba(255,255,255,0.02); }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .badge-success { background: rgba(0,255,136,0.15); color: var(--green); }
+  .badge-fail { background: rgba(255,68,102,0.15); color: var(--red); }
+  .badge-high { background: rgba(255,68,102,0.15); color: var(--red); }
+  .badge-medium { background: rgba(255,204,0,0.15); color: var(--yellow); }
+  .badge-low { background: rgba(136,136,153,0.15); color: var(--dim); }
+
+  .timeline {
+    position: relative;
+    padding-left: 30px;
+  }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--border);
+  }
+
+  .timeline-item {
+    position: relative;
+    margin-bottom: 24px;
+  }
+
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -26px;
+    top: 6px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid var(--cyan);
+    background: var(--bg);
+  }
+
+  .timeline-item.done::before { background: var(--cyan); }
+  .timeline-item.fail::before { border-color: var(--red); background: var(--red); }
+
+  .timeline-time {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--dim);
+  }
+
+  .timeline-title { font-weight: 600; font-size: 0.95rem; }
+  .timeline-detail { font-size: 0.85rem; color: var(--dim); margin-top: 4px; }
+
+  .insight-box {
+    background: var(--surface2);
+    border-left: 3px solid var(--cyan);
+    border-radius: 0 8px 8px 0;
+    padding: 16px 20px;
+    margin: 16px 0;
+    font-size: 0.9rem;
+  }
+
+  .insight-box.warning { border-left-color: var(--yellow); }
+  .insight-box.error { border-left-color: var(--red); }
+
+  .bar-chart {
+    display: flex;
+    align-items: end;
+    gap: 12px;
+    height: 120px;
+    margin: 20px 0;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+
+  .bar-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .bar {
+    width: 100%;
+    max-width: 80px;
+    border-radius: 4px 4px 0 0;
+    position: relative;
+    transition: height 0.5s ease;
+  }
+
+  .bar-label {
+    font-size: 0.7rem;
+    color: var(--dim);
+    text-align: center;
+  }
+
+  .bar-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--text);
+    text-align: center;
+    margin-bottom: 4px;
+  }
+
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85em;
+    background: var(--surface2);
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: var(--cyan);
+  }
+
+  .footer {
+    text-align: center;
+    padding: 40px;
+    color: var(--dim);
+    font-size: 0.8rem;
+  }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  @media (max-width: 768px) {
+    .hero h1 { font-size: 2rem; }
+    .hero-stats { gap: 20px; }
+    .hero-stat .value { font-size: 1.5rem; }
+    .two-col { grid-template-columns: 1fr; }
+    .card-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════ HERO ═══════════════════ -->
+<div class="hero">
+  <h1>COSMIC INVADERS</h1>
+  <p class="subtitle">A Space Invaders arcade game built by 4 AI agents collaborating in real-time</p>
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <div class="value">2,875</div>
+      <div class="label">Lines of Code</div>
+    </div>
+    <div class="hero-stat">
+      <div class="value">23</div>
+      <div class="label">Source Files</div>
+    </div>
+    <div class="hero-stat">
+      <div class="value">~25 min</div>
+      <div class="label">Total Build Time</div>
+    </div>
+    <div class="hero-stat">
+      <div class="value">$0</div>
+      <div class="label">API Cost</div>
+    </div>
+    <div class="hero-stat">
+      <div class="value">4</div>
+      <div class="label">AI Agents</div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- ═══════════════════ WHAT WE BUILT ═══════════════════ -->
+<section>
+  <h2><span class="icon">🚀</span> What We Built</h2>
+  <p>A fully playable Space Invaders-style arcade game featuring <strong>Three.js with WebGPU/WebGL</strong> rendering, custom GLSL post-processing (bloom, CRT scanlines, chromatic aberration, vignette), GPU-instanced particles, procedural 3D geometry, oscillator-based retro audio, and a complete game loop with wave progression, power-ups, destructible barriers, and combo scoring.</p>
+
+  <div class="card-grid">
+    <div class="card">
+      <h3>🎮 Gameplay</h3>
+      <div class="card-body">
+        <ul>
+          <li>5×11 invader formation with 3 enemy types</li>
+          <li>Destructible barrier shields</li>
+          <li>Power-ups: speed, multishot, shield</li>
+          <li>Combo scoring with multiplier</li>
+          <li>Progressive difficulty per wave</li>
+          <li>High score via localStorage</li>
+        </ul>
+      </div>
+    </div>
+    <div class="card">
+      <h3>✨ Graphics</h3>
+      <div class="card-body">
+        <ul>
+          <li>WebGPU renderer with WebGL fallback</li>
+          <li>GPU particle explosions & bullet trails</li>
+          <li>Bloom + CRT + chromatic aberration + vignette</li>
+          <li>Parallax starfield with nebula</li>
+          <li>Procedural ship & invader geometry</li>
+          <li>Screen shake on player hit</li>
+        </ul>
+      </div>
+    </div>
+    <div class="card">
+      <h3>🔊 Audio & UI</h3>
+      <div class="card-body">
+        <ul>
+          <li>Web Audio oscillator SFX (no asset files)</li>
+          <li>HUD overlay (score, lives, wave, combo)</li>
+          <li>Title screen with neon glow animation</li>
+          <li>Game over & pause screens</li>
+          <li>Retro monospace styling</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ THE AGENTS ═══════════════════ -->
+<section>
+  <h2><span class="icon">🤖</span> The Agent Team</h2>
+  <p>Four AI agents worked in parallel inside a <strong>tmux workspace</strong> orchestrated by <a href="https://github.com/ShawnPana/smux" style="color:var(--cyan)">smux</a> — each with a specialized role. Communication happened via <code>tmux-bridge</code> for cross-pane messaging.</p>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon icon-nemo">🟢</div>
+        <div>
+          <div class="card-title">nemo-1</div>
+          <div class="card-subtitle">Nemotron 3-Nano 4B · Local GPU · $0</div>
+        </div>
+      </div>
+      <div class="card-stat"><span class="stat-label">Role</span><span class="stat-value">Scaffolding & boilerplate</span></div>
+      <div class="card-stat"><span class="stat-label">Model</span><span class="stat-value">NVIDIA Nemotron 4B Q4_K_M</span></div>
+      <div class="card-stat"><span class="stat-label">Inference</span><span class="stat-value">~51 t/s (RTX 3050 Ti)</span></div>
+      <div class="card-stat"><span class="stat-label">Context</span><span class="stat-value">64K (TurboQuant turbo3)</span></div>
+      <div class="card-stat"><span class="stat-label">Tasks</span><span class="stat-value color-nemo">4/5 passed</span></div>
+      <div class="card-stat"><span class="stat-label">Lines written</span><span class="stat-value">~280</span></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon icon-claude">🟠</div>
+        <div>
+          <div class="card-title">claude-1</div>
+          <div class="card-subtitle">Claude Opus 4.6 · MAX Subscription · $0</div>
+        </div>
+      </div>
+      <div class="card-stat"><span class="stat-label">Role</span><span class="stat-value">Lead dev · Graphics · Bug fixes</span></div>
+      <div class="card-stat"><span class="stat-label">Model</span><span class="stat-value">Claude Opus 4.6 (1M ctx)</span></div>
+      <div class="card-stat"><span class="stat-label">Auth</span><span class="stat-value">Claude MAX (OAuth)</span></div>
+      <div class="card-stat"><span class="stat-label">Tasks</span><span class="stat-value color-claude">5/5 passed</span></div>
+      <div class="card-stat"><span class="stat-label">Lines written</span><span class="stat-value">~1,800</span></div>
+      <div class="card-stat"><span class="stat-label">Bugs fixed</span><span class="stat-value">10 (3 from others)</span></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon icon-codex">🟩</div>
+        <div>
+          <div class="card-title">codex-1</div>
+          <div class="card-subtitle">GPT-5.4 · ChatGPT Plus · $0</div>
+        </div>
+      </div>
+      <div class="card-stat"><span class="stat-label">Role</span><span class="stat-value">Implementation · Integration · QA</span></div>
+      <div class="card-stat"><span class="stat-label">Model</span><span class="stat-value">GPT-5.4</span></div>
+      <div class="card-stat"><span class="stat-label">Auth</span><span class="stat-value">ChatGPT Plus</span></div>
+      <div class="card-stat"><span class="stat-label">Tasks</span><span class="stat-value color-codex">3/3 passed</span></div>
+      <div class="card-stat"><span class="stat-label">Lines written</span><span class="stat-value">~800</span></div>
+      <div class="card-stat"><span class="stat-label">Bugs found</span><span class="stat-value">7 in code review</span></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon icon-hermes">🟣</div>
+        <div>
+          <div class="card-title">Hermes</div>
+          <div class="card-subtitle">Claude Opus 4.6 · Orchestrator</div>
+        </div>
+      </div>
+      <div class="card-stat"><span class="stat-label">Role</span><span class="stat-value">Planning · Dispatch · Metrics</span></div>
+      <div class="card-stat"><span class="stat-label">Coordination</span><span class="stat-value">tmux-bridge messaging</span></div>
+      <div class="card-stat"><span class="stat-label">Tasks dispatched</span><span class="stat-value">13</span></div>
+      <div class="card-stat"><span class="stat-label">Build verifications</span><span class="stat-value">4</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ CONTRIBUTION ═══════════════════ -->
+<section>
+  <h2><span class="icon">📊</span> Lines of Code by Agent</h2>
+  <div class="bar-chart">
+    <div class="bar-group">
+      <div class="bar-value">1,800</div>
+      <div class="bar" style="height:100%;background:linear-gradient(to top,#a0523c,#cc785c);"></div>
+      <div class="bar-label">claude-1</div>
+    </div>
+    <div class="bar-group">
+      <div class="bar-value">800</div>
+      <div class="bar" style="height:44%;background:linear-gradient(to top,#0a7a5c,#10a37f);"></div>
+      <div class="bar-label">codex-1</div>
+    </div>
+    <div class="bar-group">
+      <div class="bar-value">280</div>
+      <div class="bar" style="height:16%;background:linear-gradient(to top,#4a7a00,#76b900);"></div>
+      <div class="bar-label">nemo-1</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ BUILD TIMELINE ═══════════════════ -->
+<section>
+  <h2><span class="icon">⏱️</span> Build Timeline</h2>
+  <div class="timeline">
+    <div class="timeline-item done">
+      <div class="timeline-time">0:00 — Phase 1</div>
+      <div class="timeline-title">Scaffolding <span class="badge badge-success">nemo-1</span></div>
+      <div class="timeline-detail">package.json, vite config, index.html, Config.js, Input.js · ~3.5 min</div>
+    </div>
+    <div class="timeline-item done">
+      <div class="timeline-time">3:30 — Phase 2</div>
+      <div class="timeline-title">Core Engine <span class="badge badge-success">claude-1</span></div>
+      <div class="timeline-detail">Renderer.js, Game.js, Player.js, main.js · Fixed nemo's bugs · 1m 35s</div>
+    </div>
+    <div class="timeline-item done">
+      <div class="timeline-time">5:05 — Phase 3</div>
+      <div class="timeline-title">Enemies & Gameplay <span class="badge badge-success">codex-1</span> <span class="badge badge-success">nemo-1</span></div>
+      <div class="timeline-detail">6 gameplay files (codex) + Score.js (nemo) · Running in parallel · ~2.4 min</div>
+    </div>
+    <div class="timeline-item done">
+      <div class="timeline-time">7:30 — Phase 4</div>
+      <div class="timeline-title">Graphics & Shaders <span class="badge badge-success">claude-1</span></div>
+      <div class="timeline-detail">WGSL shaders, particles, post-FX, starfield, procedural models · 2m 38s</div>
+    </div>
+    <div class="timeline-item fail">
+      <div class="timeline-time">10:08 — Phase 5 (attempt 1)</div>
+      <div class="timeline-title">Audio & UI <span class="badge badge-fail">nemo-1 FAILED</span></div>
+      <div class="timeline-detail">Nemotron hallucinated tool call XML instead of invoking tools on complex multi-file task</div>
+    </div>
+    <div class="timeline-item done">
+      <div class="timeline-time">11:30 — Phase 5+6</div>
+      <div class="timeline-title">Audio, UI, Integration, Polish <span class="badge badge-success">claude-1</span> <span class="badge badge-success">codex-1</span></div>
+      <div class="timeline-detail">Claude: audio + UI + polish (6m 20s) · Codex: full integration + build verify (2m 12s) · Parallel</div>
+    </div>
+    <div class="timeline-item done">
+      <div class="timeline-time">18:00 — Phase 7</div>
+      <div class="timeline-title">Code Review <span class="badge badge-success">codex-1</span></div>
+      <div class="timeline-detail">Found 7 real bugs (2 HIGH, 3 MEDIUM, 2 LOW) · ~2 min</div>
+    </div>
+    <div class="timeline-item done">
+      <div class="timeline-time">20:00 — Bug Fixes</div>
+      <div class="timeline-title">Fix All 7 Bugs <span class="badge badge-success">claude-1</span></div>
+      <div class="timeline-detail">All 7 code review bugs fixed · 1m 45s</div>
+    </div>
+    <div class="timeline-item done">
+      <div class="timeline-time">22:00 — Rendering Fix</div>
+      <div class="timeline-title">Fix Black Screen <span class="badge badge-success">claude-1</span></div>
+      <div class="timeline-detail">PostFX incompatible with WebGPU — guarded by renderer type check · 2m 23s</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ TASK TABLE ═══════════════════ -->
+<section>
+  <h2><span class="icon">📋</span> Full Task Log</h2>
+  <table>
+    <thead>
+      <tr><th>#</th><th>Task</th><th>Agent</th><th>Time</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>1.1</td><td>Project scaffolding</td><td class="color-nemo">nemo-1</td><td>~90s</td><td><span class="badge badge-success">✓</span></td></tr>
+      <tr><td>1.2</td><td>Config.js</td><td class="color-nemo">nemo-1</td><td>~60s</td><td><span class="badge badge-success">✓</span></td></tr>
+      <tr><td>1.3</td><td>Input.js</td><td class="color-nemo">nemo-1</td><td>~60s</td><td><span class="badge badge-success">✓</span></td></tr>
+      <tr><td>2.x</td><td>Renderer + Game + Player + main.js</td><td class="color-claude">claude-1</td><td>95s</td><td><span class="badge badge-success">✓</span></td></tr>
+      <tr><td>3.x</td><td>Invader, Grid, Bullet, Collision, Barrier, PowerUp</td><td class="color-codex">codex-1</td><td>~85s</td><td><span class="badge badge-success">✓</span></td></tr>
+      <tr><td>3.5</td><td>Score.js</td><td class="color-nemo">nemo-1</td><td>~60s</td><td><span class="badge badge-success">✓</span></td></tr>
+      <tr><td>4.x</td><td>Shaders, Particles, PostFX, Background, Models</td><td class="color-claude">claude-1</td><td>158s</td><td><span class="badge badge-success">✓</span></td></tr>
+      <tr><td>5.x</td><td>AudioManager, HUD, Menu, CSS</td><td class="color-nemo">nemo-1</td><td>~90s</td><td><span class="badge badge-fail">✗</span></td></tr>
+      <tr><td>5.x</td><td>AudioManager, HUD, Menu, CSS (retry)</td><td class="color-claude">claude-1</td><td>~120s</td><td><span class="badge badge-success">✓</span></td></tr>
+      <tr><td>6.x</td><td>Full integration + build verify</td><td class="color-codex">codex-1</td><td>~132s</td><td><span class="badge badge-success">✓</span></td></tr>
+      <tr><td>6.x</td><td>Polish: models, pool, shake, flash</td><td class="color-claude">claude-1</td><td>~260s</td><td><span class="badge badge-success">✓</span></td></tr>
+      <tr><td>7.1</td><td>Full code review</td><td class="color-codex">codex-1</td><td>~120s</td><td><span class="badge badge-success">✓</span></td></tr>
+      <tr><td>7.2</td><td>Fix all 7 bugs</td><td class="color-claude">claude-1</td><td>105s</td><td><span class="badge badge-success">✓</span></td></tr>
+      <tr><td>7.3</td><td>Fix black screen (rendering)</td><td class="color-claude">claude-1</td><td>143s</td><td><span class="badge badge-success">✓</span></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ═══════════════════ CODE REVIEW ═══════════════════ -->
+<section>
+  <h2><span class="icon">🔍</span> Code Review Results</h2>
+  <p>Codex performed a comprehensive code review reading all 23 source files. 7 issues found, all fixed by Claude in a single 1m 45s pass.</p>
+  <table>
+    <thead>
+      <tr><th>Severity</th><th>Issue</th><th>File</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="badge badge-high">HIGH</span></td><td>Invader flash timer never advanced — non-lethal hits leave invaders permanently white</td><td>Invader.js</td></tr>
+      <tr><td><span class="badge badge-high">HIGH</span></td><td>Duplicate Background + PostFX instances consuming GPU resources</td><td>Renderer.js</td></tr>
+      <tr><td><span class="badge badge-medium">MEDIUM</span></td><td>Player bullets survive wave transitions</td><td>Game.js</td></tr>
+      <tr><td><span class="badge badge-medium">MEDIUM</span></td><td>renderer.update() never called — screen shake was dead code</td><td>Game.js</td></tr>
+      <tr><td><span class="badge badge-medium">MEDIUM</span></td><td>Star sizes not rendered — PointsMaterial ignores per-vertex size</td><td>Background.js</td></tr>
+      <tr><td><span class="badge badge-low">LOW</span></td><td>Unused _vec3 variable</td><td>ParticleSystem.js</td></tr>
+      <tr><td><span class="badge badge-low">LOW</span></td><td>Leaked template BoxGeometry on Barrier construction</td><td>Barrier.js</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ═══════════════════ KEY INSIGHTS ═══════════════════ -->
+<section>
+  <h2><span class="icon">💡</span> Key Insights</h2>
+
+  <div class="insight-box">
+    <strong>Tiered model strategy works.</strong> Nemotron ($0, local GPU) handled 4 boilerplate tasks. Claude (MAX sub) handled all complex architecture and graphics. Codex (Plus sub) did bulk implementation and QA. Total API cost: $0 beyond existing subscriptions.
+  </div>
+
+  <div class="insight-box warning">
+    <strong>Small models fail on complex multi-file tasks.</strong> Nemotron hallucinated tool call XML tags instead of invoking Hermes tools when asked to create 4 files at once. Keep local model tasks simple and single-file.
+  </div>
+
+  <div class="insight-box">
+    <strong>Claude proactively fixes other agents' bugs.</strong> When assigned its own tasks, Claude also identified and fixed 3 bugs in nemo's code (Input.js <code>this</code> binding, outdated Three.js version, CommonJS → ESM in vite config). It acts as a senior dev reviewing junior work.
+  </div>
+
+  <div class="insight-box">
+    <strong>Codex excels at code review.</strong> Found 7 real integration bugs that Claude and nemo missed, including a critical rendering issue (duplicate PostFX pipeline) and subtle gameplay logic bugs. Its build-verify-then-report workflow is thorough.
+  </div>
+
+  <div class="insight-box warning">
+    <strong>Parallel work creates file conflicts.</strong> Both Claude and Codex modified Game.js and Player.js. Last writer wins. Future improvement: assign file ownership per agent or use git branches.
+  </div>
+
+  <div class="insight-box">
+    <strong>Task files > inline prompts.</strong> Writing tasks to <code>.md</code> files and having agents read them avoids shell quoting issues. Codex crashed with a bash syntax error when parentheses were in an inline prompt.
+  </div>
+</section>
+
+<!-- ═══════════════════ INFRASTRUCTURE ═══════════════════ -->
+<section>
+  <h2><span class="icon">🛠️</span> Infrastructure</h2>
+  <div class="two-col">
+    <div class="card">
+      <h3>Hardware</h3>
+      <div class="card-stat"><span class="stat-label">GPU</span><span class="stat-value">RTX 3050 Ti (4GB)</span></div>
+      <div class="card-stat"><span class="stat-label">CPU</span><span class="stat-value">Intel i7 (16 threads)</span></div>
+      <div class="card-stat"><span class="stat-label">RAM</span><span class="stat-value">16GB DDR4</span></div>
+      <div class="card-stat"><span class="stat-label">Nemotron VRAM</span><span class="stat-value">3,305 / 4,096 MiB</span></div>
+    </div>
+    <div class="card">
+      <h3>Software Stack</h3>
+      <div class="card-stat"><span class="stat-label">Orchestration</span><span class="stat-value">smux + tmux-bridge</span></div>
+      <div class="card-stat"><span class="stat-label">Local inference</span><span class="stat-value">TurboQuant (turbo3 KV)</span></div>
+      <div class="card-stat"><span class="stat-label">KV compression</span><span class="stat-value">~5x (3.25 bpv)</span></div>
+      <div class="card-stat"><span class="stat-label">Context</span><span class="stat-value">64K @ ngl=99</span></div>
+      <div class="card-stat"><span class="stat-label">Bundler</span><span class="stat-value">Vite 4.5</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ OPTIMAL ROLES ═══════════════════ -->
+<section>
+  <h2><span class="icon">🎯</span> Recommended Agent Roles</h2>
+  <table>
+    <thead>
+      <tr><th>Role</th><th>Best Agent</th><th>Why</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Config, boilerplate, simple modules</td><td class="color-nemo">Nemotron (local)</td><td>Free, fast for single-file tasks</td></tr>
+      <tr><td>Architecture, shaders, complex code</td><td class="color-claude">Claude Code (MAX)</td><td>Highest quality, fixes others' bugs</td></tr>
+      <tr><td>Bulk implementation, integration</td><td class="color-codex">Codex (Plus)</td><td>Fast, self-verifies with build tools</td></tr>
+      <tr><td>Code review, QA</td><td class="color-codex">Codex (Plus)</td><td>Thorough, finds real integration bugs</td></tr>
+      <tr><td>Orchestration, planning</td><td class="color-hermes">Hermes</td><td>Coordinates via tmux-bridge</td></tr>
+    </tbody>
+  </table>
+</section>
+
+</div>
+
+<div class="footer">
+  Built with <a href="https://github.com/ShawnPana/smux" style="color:var(--cyan)">smux</a> multi-agent workspace · March 29, 2026<br>
+  Agents: Hermes · Claude Code · Codex CLI · Nemotron 4B (TurboQuant)
+</div>
+
+</body>
+</html>
