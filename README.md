@@ -164,7 +164,7 @@ cosmic-invaders/
 <table>
   <tr>
     <td align="center"><strong><a href="https://github.com/claudlos">claudlos</a></strong><br/>Project creator<br/>& human overseer</td>
-    <td align="center"><strong>Hermes</strong><br/><a href="https://github.com/hermes-agent">Hermes Agent</a><br/>Orchestrator & planner</td>
+    <td align="center"><strong>Hermes</strong><br/><a href="https://github.com/NousResearch/hermes-agent">Hermes Agent</a><br/>Orchestrator & planner</td>
     <td align="center"><strong>Claude Code</strong><br/><a href="https://claude.ai">Anthropic</a><br/>Lead developer</td>
     <td align="center"><strong>Codex CLI</strong><br/><a href="https://openai.com">OpenAI</a><br/>Implementation & QA</td>
     <td align="center"><strong>Nemotron</strong><br/><a href="https://nvidia.com">NVIDIA</a><br/>Local scaffolding</td>
@@ -179,7 +179,7 @@ cosmic-invaders/
 - **[TurboQuant](https://github.com/spiritbuun/llama-cpp-turboquant-cuda)** — turbo3 KV cache compression enabling 64K context on a 4GB GPU
 - **[Claude Code](https://claude.ai/code)** — Anthropic's CLI agent (MAX subscription)
 - **[Codex CLI](https://github.com/openai/codex)** — OpenAI's coding agent (ChatGPT Plus)
-- **[Hermes](https://github.com/hermes-agent)** — AI agent framework with tool-calling and multi-session orchestration
+- **[Hermes](https://github.com/NousResearch/hermes-agent)** — AI agent framework with tool-calling and multi-session orchestration
 
 ## 📄 License
 
