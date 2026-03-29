@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 
 const POOL_SIZE = 500;
-const _vec3 = new THREE.Vector3();
 const _color = new THREE.Color();
 const _dummy = new THREE.Object3D();
 

@@ -104,6 +104,7 @@ class Game {
   update(dt, now) {
     this.background?.update(dt);
     this.particleSystem?.update(dt);
+    this.renderer.update(dt);
 
     if (this.state === State.PLAYING) {
       this.updatePlaying(dt, now);
@@ -265,6 +266,7 @@ class Game {
 
   startNextWave() {
     this.disposeInvaderGrid();
+    this.clearArray(this.playerBullets);
     this.clearArray(this.enemyBullets);
     this.clearArray(this.powerUps);
     this.createInvaderWave();

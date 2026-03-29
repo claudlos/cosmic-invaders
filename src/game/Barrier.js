@@ -20,7 +20,8 @@ class Barrier {
         if (this.isArchGap(row, col)) continue;
 
         const material = new THREE.MeshBasicMaterial({ color: 0x44dd88 });
-        const mesh = new THREE.Mesh(geometry.clone(), material);
+        const clonedGeo = geometry.clone();
+        const mesh = new THREE.Mesh(clonedGeo, material);
         mesh.position.set(
           (col - (CONFIG.BARRIER.BLOCKS_WIDE - 1) / 2) * this.blockSize,
           ((CONFIG.BARRIER.BLOCKS_HIGH - 1) / 2 - row) * this.blockSize,
@@ -34,6 +35,9 @@ class Barrier {
         });
       }
     }
+
+    // Dispose the template geometry (each block has its own clone)
+    geometry.dispose();
   }
 
   isArchGap(row, col) {

@@ -41,15 +41,34 @@ class Background {
 
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    geo.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+    geo.setAttribute('aSize', new THREE.BufferAttribute(sizes, 1));
     geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
 
-    const mat = new THREE.PointsMaterial({
-      vertexColors: true,
+    // Custom ShaderMaterial to support per-vertex star sizes
+    const mat = new THREE.ShaderMaterial({
       transparent: true,
       depthWrite: false,
       blending: THREE.AdditiveBlending,
-      sizeAttenuation: false,
+      vertexShader: /* glsl */ `
+        attribute float aSize;
+        varying vec3 vColor;
+        void main() {
+          vColor = color;
+          vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+          gl_PointSize = aSize;
+          gl_Position = projectionMatrix * mvPosition;
+        }
+      `,
+      fragmentShader: /* glsl */ `
+        varying vec3 vColor;
+        void main() {
+          // Soft circular point
+          float d = length(gl_PointCoord - vec2(0.5));
+          float alpha = 1.0 - smoothstep(0.3, 0.5, d);
+          gl_FragColor = vec4(vColor, alpha);
+        }
+      `,
+      vertexColors: true,
     });
 
     const points = new THREE.Points(geo, mat);

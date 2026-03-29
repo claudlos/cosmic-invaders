@@ -46,6 +46,11 @@ class InvaderGrid {
     const aliveInvaders = this.getAliveInvaders();
     if (aliveInvaders.length === 0) return;
 
+    // Advance per-invader timers (flash decay, etc.)
+    for (const invader of aliveInvaders) {
+      invader.update(dt);
+    }
+
     const speedMultiplier = 1 + (this.totalInvaders - aliveInvaders.length) / this.totalInvaders;
     const step = this.baseSpeed * speedMultiplier * dt * 60;
 
