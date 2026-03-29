@@ -1,8 +1,10 @@
 import * as THREE from 'three';
+import { createInvader } from '../graphics/Models.js';
+
 const TYPE_CONFIG = {
-  basic: { color: 0x00ff00, hp: 1 },
-  tough: { color: 0xffff00, hp: 2 },
-  elite: { color: 0xff0000, hp: 3 },
+  basic: { color: 0x88ff44, hp: 1 },
+  tough: { color: 0xffaa22, hp: 2 },
+  elite: { color: 0xff4488, hp: 3 },
 };
 
 class Invader {
@@ -11,6 +13,7 @@ class Invader {
 
     this.type = TYPE_CONFIG[type] ? type : 'basic';
     this.hp = settings.hp;
+    this.maxHp = settings.hp;
     this.alive = true;
     this.position = new THREE.Vector3(x, y, 0);
     this.size = {
@@ -19,11 +22,11 @@ class Invader {
       depth: 8,
     };
 
-    this.mesh = new THREE.Mesh(
-      new THREE.BoxGeometry(this.size.width, this.size.height, this.size.depth),
-      new THREE.MeshBasicMaterial({ color: settings.color })
-    );
+    // Use Models.js factory for visually distinct invader types
+    this.mesh = createInvader(this.type);
     this.mesh.position.copy(this.position);
+
+    this.flashTimer = 0;
   }
 
   setPosition(x, y) {
@@ -46,7 +49,31 @@ class Invader {
       return true;
     }
 
+    // Flash white on hit (not killed)
+    this.flashTimer = 0.12;
+    this.mesh.traverse((child) => {
+      if (child.isMesh && child.material) {
+        child.userData.originalColor = child.material.color.getHex();
+        child.material.color.set(0xffffff);
+      }
+    });
+
     return false;
+  }
+
+  update(dt) {
+    // Flash decay
+    if (this.flashTimer > 0) {
+      this.flashTimer -= dt;
+      if (this.flashTimer <= 0) {
+        this.flashTimer = 0;
+        this.mesh.traverse((child) => {
+          if (child.isMesh && child.userData.originalColor !== undefined) {
+            child.material.color.set(child.userData.originalColor);
+          }
+        });
+      }
+    }
   }
 
   getBounds() {
@@ -58,13 +85,13 @@ class Invader {
     };
   }
 
-  dispose(scene) {
-    if (scene) {
-      scene.remove(this.mesh);
-    }
-
-    this.mesh.geometry.dispose();
-    this.mesh.material.dispose();
+  dispose() {
+    this.mesh.traverse((child) => {
+      if (child.isMesh) {
+        child.geometry?.dispose();
+        child.material?.dispose();
+      }
+    });
   }
 }
 

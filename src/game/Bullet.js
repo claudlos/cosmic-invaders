@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import CONFIG from '../utils/Config.js';
+import { createBullet } from '../graphics/Models.js';
 
 class Bullet {
   constructor(x, y, owner = 'player') {
@@ -14,13 +15,8 @@ class Bullet {
     };
     this.active = true;
 
-    this.mesh = new THREE.Mesh(
-      new THREE.CylinderGeometry(this.size.width / 2, this.size.width / 2, this.size.height, 10),
-      new THREE.MeshBasicMaterial({
-        color: owner === 'enemy' ? 0xff4444 : 0x00ffff,
-      })
-    );
-    this.mesh.rotation.z = Math.PI / 2;
+    // Use Models.js factory for styled bullets
+    this.mesh = createBullet(owner !== 'enemy');
     this.mesh.position.copy(this.position);
   }
 
@@ -37,6 +33,17 @@ class Bullet {
     return this.active;
   }
 
+  // Reset for pool reuse
+  reset(x, y, owner = 'player') {
+    this.owner = owner;
+    this.speed = owner === 'enemy' ? CONFIG.BULLET.ENEMY_SPEED : CONFIG.BULLET.SPEED;
+    this.velocity.set(0, owner === 'enemy' ? -this.speed : this.speed, 0);
+    this.position.set(x, y, 0);
+    this.mesh.position.copy(this.position);
+    this.active = true;
+    this.mesh.visible = true;
+  }
+
   getBounds() {
     return {
       left: this.position.x - this.size.width / 2,
@@ -50,9 +57,12 @@ class Bullet {
     if (scene) {
       scene.remove(this.mesh);
     }
-
-    this.mesh.geometry.dispose();
-    this.mesh.material.dispose();
+    this.mesh.traverse((child) => {
+      if (child.isMesh) {
+        child.geometry?.dispose();
+        child.material?.dispose();
+      }
+    });
   }
 }
 
