@@ -128,11 +128,8 @@ class PostFX {
     const renderPass = new RenderPass(scene, camera);
     this.composer.addPass(renderPass);
 
-    // 2. Bloom
-    const resolution = new THREE.Vector2(
-      renderer.domElement.width,
-      renderer.domElement.height
-    );
+    // 2. Bloom — use logical size, not device pixels
+    const resolution = renderer.getSize(new THREE.Vector2());
     this.bloomPass = new UnrealBloomPass(resolution, 0.8, 0.4, 0.85);
     this.composer.addPass(this.bloomPass);
 

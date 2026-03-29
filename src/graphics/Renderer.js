@@ -16,6 +16,7 @@ class Renderer {
     this.camera.position.z = 10;
 
     this.renderer = null;
+    this.isWebGL = false;
     this.ready = false;
 
     // Screen shake state
@@ -31,10 +32,12 @@ class Renderer {
       const { default: WebGPURenderer } = await import('three/src/renderers/webgpu/WebGPURenderer.js');
       this.renderer = new WebGPURenderer({ antialias: true });
       await this.renderer.init();
+      this.isWebGL = false;
       console.log('Using WebGPU renderer');
     } catch (e) {
       console.warn('WebGPU not available, falling back to WebGL:', e.message);
       this.renderer = new THREE.WebGLRenderer({ antialias: true });
+      this.isWebGL = true;
     }
 
     this.renderer.setSize(this.width, this.height);

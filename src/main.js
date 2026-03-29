@@ -1,3 +1,4 @@
+import * as THREE from 'three';
 import Renderer from './graphics/Renderer.js';
 import Background from './graphics/Background.js';
 import ParticleSystem from './graphics/ParticleSystem.js';
@@ -20,19 +21,24 @@ async function main() {
   const score = new Score();
   const background = new Background(renderer.scene);
   const particleSystem = new ParticleSystem(renderer.scene);
-  const postFX = new PostFX(renderer.renderer, renderer.scene, renderer.camera);
   const audioManager = new AudioManager();
   const hud = new HUD();
   const menu = new Menu();
 
-  const syncPostFXSize = () => {
-    const width = renderer.renderer.domElement.width;
-    const height = renderer.renderer.domElement.height;
-    postFX.setSize(width, height);
-  };
+  // EffectComposer only works with WebGLRenderer — skip PostFX on WebGPU
+  let postFX = null;
+  if (renderer.isWebGL) {
+    postFX = new PostFX(renderer.renderer, renderer.scene, renderer.camera);
 
-  syncPostFXSize();
-  window.addEventListener('resize', syncPostFXSize);
+    const syncPostFXSize = () => {
+      // Use getSize() for logical pixels — domElement.width includes devicePixelRatio
+      const size = renderer.renderer.getSize(new THREE.Vector2());
+      postFX.setSize(size.x, size.y);
+    };
+
+    syncPostFXSize();
+    window.addEventListener('resize', syncPostFXSize);
+  }
 
   const game = new Game(renderer, input, {
     background,
