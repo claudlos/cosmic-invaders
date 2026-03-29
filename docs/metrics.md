@@ -1,82 +1,105 @@
-# Cosmic Invaders — Multi-Agent Build Metrics
+# Cosmic Invaders — Final Multi-Agent Build Metrics
 
 ## Agent Configuration
 
-| Agent | Model | Provider | Speed | Context | Cost |
-|-------|-------|----------|-------|---------|------|
+| Agent | Model | Provider | Decode Speed | Context | Cost |
+|-------|-------|----------|-------------|---------|------|
 | nemo-1 | Nemotron 3-Nano 4B (Q4_K_M) | TurboQuant local (turbo3 KV, ngl=99) | ~51 t/s | 64K | $0 |
 | claude-1 | Claude Opus 4.6 | Anthropic MAX subscription | — | 1M | $0 (sub) |
 | codex-1 | GPT-5.4 | ChatGPT Plus subscription | — | — | $0 (sub) |
-| hermes | Claude Opus 4.6 | Anthropic API (orchestrator) | — | 1M | API cost |
+| hermes | Claude Opus 4.6 | Anthropic API (orchestrator) | — | 1M | API |
 
 ## Hardware
-- GPU: NVIDIA RTX 3050 Ti Laptop (4GB VRAM) — running Nemotron server
+- GPU: NVIDIA RTX 3050 Ti Laptop (4GB VRAM, 3305 MiB used by Nemotron)
 - CPU: Intel i7 (16 threads)
 - RAM: 16GB DDR4
-- Nemotron VRAM: 3305 MiB / 4096 MiB
+
+---
 
 ## Task Log
 
-| # | Phase | Task | Agent | Duration | Tools | Errors | Status | Notes |
-|---|-------|------|-------|----------|-------|--------|--------|-------|
-| 1.1 | Scaffolding | package.json + vite + index.html + dirs | nemo-1 | ~90s | 1 | 0 | ✅ | Three.js version old, fixed by Claude |
-| 1.2 | Scaffolding | Config.js (game constants) | nemo-1 | ~60s | 1 | 0 | ✅ | Clean, all values correct |
-| 1.3 | Scaffolding | Input.js (keyboard handler) | nemo-1 | ~60s | 0 | 0 | ✅ | Had `this` binding bug, fixed by Claude |
-| 2.1-2.4 | Core Engine | Renderer + Game + Player + main.js | claude-1 | 95s | ~15 | 0 | ✅ | Also fixed nemo's bugs in Input.js, vite.config, package.json |
-| 3.1-3.4 | Gameplay | Invader + Grid + Bullet + Collision + Barrier + PowerUp | codex-1 | ~85s | ~12 | 0 | ✅ | Also fixed WebGPU import path, verified build |
-| 3.5 | Gameplay | Score.js (scoring system) | nemo-1 | ~60s | 1 | 0 | ✅ | Clean implementation |
-| 4.1-4.5 | Graphics | ShaderLib + Particles + PostFX + Background + Models | claude-1 | 158s | ~20 | 0 | ✅ | WGSL shaders, instanced particles, procedural geometry |
+| # | Phase | Task | Agent | Duration | Status | Notes |
+|---|-------|------|-------|----------|--------|-------|
+| 1.1 | Scaffolding | package.json, vite, index.html, dirs | nemo-1 | ~90s | ✅ | Three version old |
+| 1.2 | Scaffolding | Config.js (game constants) | nemo-1 | ~60s | ✅ | Clean |
+| 1.3 | Scaffolding | Input.js (keyboard handler) | nemo-1 | ~60s | ✅ | `this` binding bug |
+| 2.1-2.4 | Core Engine | Renderer + Game + Player + main.js | claude-1 | 95s | ✅ | Fixed nemo's bugs too |
+| 3.1-3.4 | Gameplay | 6 files: Invader, Grid, Bullet, Collision, Barrier, PowerUp | codex-1 | ~85s | ✅ | Fixed WebGPU import, verified build |
+| 3.5 | Gameplay | Score.js | nemo-1 | ~60s | ✅ | Clean |
+| 4.1-4.5 | Graphics | ShaderLib, Particles, PostFX, Background, Models | claude-1 | 158s | ✅ | WGSL shaders, instanced particles |
+| 5.1-5.4 | Audio & UI | AudioManager, HUD, Menu, styles.css | nemo-1 | FAIL | ❌ | Hallucinated tool calls, didn't create files |
+| 5.1-5.4 | Audio & UI (retry) | AudioManager, HUD, Menu, styles.css | claude-1 | ~120s | ✅ | Created all 4 files |
+| 6.1-6.2 | Integration | main.js + Game.js full wiring | codex-1 | ~132s | ✅ | Wired all modules, npm build passes |
+| 6.3 | Polish | Models meshes, Pool.js, screen shake, flash | claude-1 | ~260s | ✅ | Replaced placeholder geometry, added Pool |
+| 7.1 | Code Review | Full codebase review | codex-1 | ~120s | ✅ | Found 7 real issues (2 High, 3 Med, 2 Low) |
 
-## Summary Statistics
+---
 
-### Per-Agent Totals
-| Agent | Tasks | Total Time | Avg Time | Files Created | Lines Written | Fix Others' Bugs |
-|-------|-------|------------|----------|---------------|---------------|-----------------|
-| nemo-1 | 4 | ~4.5 min | ~68s | 5 | ~210 | 0 |
-| claude-1 | 2 (batched) | ~4.2 min | ~127s | 9 | ~1300 | 3 (Input.js, vite, package.json) |
-| codex-1 | 1 (batched) | ~1.4 min | ~85s | 6 | ~510 | 1 (Renderer.js import) |
+## Per-Agent Summary
 
-### Phase Totals
-| Phase | Tasks | Wall Time | Agent | Lines |
-|-------|-------|-----------|-------|-------|
-| 1. Scaffolding | 3 | ~3.5 min | nemo-1 | ~92 |
-| 2. Core Engine | 4 (batched) | ~1.6 min | claude-1 | ~320 |
-| 3. Gameplay | 7 (batched) | ~2.4 min | codex-1 + nemo-1 | ~690 |
-| 4. Graphics | 5 (batched) | ~2.6 min | claude-1 | ~920 |
+| Agent | Tasks Attempted | Succeeded | Failed | Total Time | Lines Written | Cost |
+|-------|----------------|-----------|--------|------------|---------------|------|
+| nemo-1 | 5 | 4 | 1 | ~5.5 min | ~280 | $0 |
+| claude-1 | 3 batches | 3 | 0 | ~10.5 min | ~1800 | $0 (MAX sub) |
+| codex-1 | 3 batches | 3 | 0 | ~5.6 min | ~800 | $0 (Plus sub) |
+| **TOTAL** | **11** | **10** | **1** | **~22 min** | **2875** | **$0** |
 
-### Codebase Stats
-- **Total files**: 18 JavaScript modules
-- **Total lines**: 2,024 LOC
-- **Build status**: ✅ Passing (Vite, chunk-size warning only)
-- **Architecture**: ES modules, Three.js + WebGPU
-- **Total wall time**: ~12 minutes (Phases 1-4)
+## Codebase Final Stats
+- **Files**: 22 JavaScript + 1 CSS = 23 source files
+- **Lines of code**: 2,875 (2,682 JS + 193 CSS)
+- **Build status**: ✅ Passing
+- **Architecture**: ES modules, Three.js + WebGPU/WebGL fallback
+- **Commits**: 4
 
-### Key Observations
+## Largest Files
+| File | Lines | Author |
+|------|-------|--------|
+| Game.js | 361 | codex-1 + claude-1 |
+| Models.js | 243 | claude-1 |
+| ShaderLib.js | 230 | claude-1 |
+| ParticleSystem.js | 212 | claude-1 |
+| styles.css | 193 | claude-1 |
+| PostFX.js | 169 | claude-1 |
+| Background.js | 165 | claude-1 |
+| Player.js | 134 | claude-1 |
+| Renderer.js | 133 | claude-1 |
+| InvaderGrid.js | 123 | codex-1 |
 
-1. **Nemotron (nemo-1) at $0 cost**: Good for boilerplate — Config.js, Score.js came out clean. Input.js had a `this` binding bug (common pattern issue for small models). ~60-90s per task including chain-of-thought reasoning time.
+---
 
-2. **Claude Code (claude-1) as lead developer**: Produced the most complex code (shaders, particles, renderer). Proactively fixed bugs in other agents' code. 1m35s for 4 files, 2m38s for 5 graphics files. The quality ceiling is clearly higher.
+## Code Review Findings (by codex-1)
 
-3. **Codex (codex-1) as implementation + QA**: Fast bulk implementation (6 gameplay files in ~85s). Went beyond the task to fix a build-breaking import in Renderer.js. Ran build verification autonomously. Needed manual approval for sandbox-escaping commands (5 approvals).
+| # | Severity | Issue | File |
+|---|----------|-------|------|
+| 1 | **HIGH** | Invader flash timer never advanced — non-lethal hits leave invaders permanently white | Invader.js:52 |
+| 2 | **HIGH** | Duplicate Background + PostFX instances (Renderer creates its own, main.js creates another) | Renderer.js + main.js |
+| 3 | MEDIUM | Player bullets survive wave transitions — can hit freshly spawned invaders | Game.js:266 |
+| 4 | MEDIUM | renderer.update() never called — screen shake and renderer-managed animations are dead code | Game.js:54 |
+| 5 | MEDIUM | Star size attribute never consumed by PointsMaterial — all stars render same size | Background.js |
+| 6 | LOW | Unused _vec3 variable | ParticleSystem.js:4 |
+| 7 | LOW | Leaked BoxGeometry on Barrier construction | Barrier.js:16 |
 
-4. **Codex approval friction**: The `--full-auto` mode still prompts for sandbox escape and npm commands. Each approval cost ~15s of orchestrator time. Would benefit from `--dangerously-bypass-approvals-and-sandbox` for trusted projects.
+---
 
-5. **Prompt injection risk**: Codex had a shell quoting issue with parentheses in the prompt (bash syntax error). Fixed by writing tasks to .md files and having agents read them. Claude handled the same prompt fine.
+## Key Findings
 
-6. **Agent complementarity**: nemo-1 for cheap scaffolding → claude-1 for complex architecture → codex-1 for bulk implementation + build verification. The token-saving strategy works — nemo handled 4 tasks at zero cost that would have consumed MAX/Plus tokens.
+### Agent Strengths
+- **Nemotron (nemo-1)**: Fast for simple boilerplate (Config, Score). $0 cost. But failed on complex multi-file task — hallucinated tool call XML instead of executing tools. Best for single-file, well-specified tasks.
+- **Claude Code (claude-1)**: Best code quality. Proactively fixes other agents' bugs. Handles complex shader/graphics code. 6m20s for Phase 5+6 combined (9 files). The workhorse.
+- **Codex (codex-1)**: Excellent for bulk implementation + QA. Self-verifies with npm build. Great code reviewer — found 7 real bugs. Needs approval clicks in full-auto mode (friction).
 
-### Context Usage
-| Agent | Start | End | Delta | % Used |
-|-------|-------|-----|-------|--------|
-| nemo-1 | 18.1K | 21.1K | +3K | 32% of 64K |
-| claude-1 | 0 | ~40K est | ~40K | ~4% of 1M |
-| codex-1 | 0 | ~7% used | — | 93% remaining |
+### Workflow Observations
+1. **Parallel dispatch works** — Claude and Codex worked simultaneously on Phase 4 and 3
+2. **File conflicts** — Both agents modified some of the same files (Game.js, Player.js). Last writer wins. Need better coordination or file locking.
+3. **Task file pattern** — Writing prompts to .md files and having agents read them avoids shell quoting issues (codex bash syntax error with parentheses)
+4. **Nemotron failure mode** — On complex multi-file tasks, Nemotron hallucinated `</tool_call>` XML tags instead of invoking Hermes tools. Known issue with small reasoning models. Keep nemo tasks simple and single-file.
+5. **Codex approval friction** — 5+ manual approval clicks per task despite --full-auto. Use --dangerously-bypass-approvals-and-sandbox for trusted projects.
+6. **Total build time**: 22 minutes for a 2,875 LOC Three.js game with WebGPU shaders, particles, post-processing, audio, and UI — across 3 agents at $0 subscription cost.
 
-### Error Log
-| Time | Agent | Error | Resolution |
-|------|-------|-------|------------|
-| Phase 1 | nemo-1 | Input.js `this` binding bug | Fixed by claude-1 in Phase 2 |
-| Phase 1 | nemo-1 | Three.js version ^0.14.0 (outdated) | Fixed by claude-1 to latest |
-| Phase 1 | nemo-1 | vite.config.js used CommonJS | Fixed by claude-1 to ESM |
-| Phase 3 | codex-1 | Shell quoting broke prompt | Fixed by using .task-codex.md file |
-| Phase 3 | codex-1 | WebGPU import path wrong | Self-fixed by codex-1 during build check |
+### Recommended Agent Roles (for future projects)
+| Role | Agent | Reasoning |
+|------|-------|-----------|
+| Scaffolding, config, simple modules | nemo-1 | Free, fast for boilerplate |
+| Architecture, complex code, shaders | claude-1 | Highest quality, fixes others' work |
+| Bulk implementation, integration, QA | codex-1 | Fast, self-verifies, good reviewer |
+| Orchestration, planning, metrics | hermes (gateway) | Coordinates all agents via tmux-bridge |
